@@ -23,17 +23,33 @@ def clean_sessions():
     print(sessions.shape[0])
     sessions = sessions.astype({'user_id': 'int32', 'product_id': 'int32', 'purchase_id': "Int64"}, errors='ignore')
     sessions.to_json("data/sessions_clean.jsonl", orient='records', lines=True)
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+    return sessions
 
 
-# Press the green button in the gutter to run the script.
+def foo(sessions: pd.DataFrame, users: pd.DataFrame):
+    bought = sessions[sessions["event_type"] == "BUY_PRODUCT"]
+    views = sessions[sessions["event_type"] == "VIEW_PRODUCT"]
+    successful_sessions = sessions[sessions["session_id"].isin(bought["session_id"])]
+    successful_views_count = successful_sessions.groupby("session_id")["user_id"].agg('count') - 1
+    print(successful_views_count.values)
+    import matplotlib.pyplot as plt
+    plt.figure()
+    _ = plt.hist(successful_views_count.values)
+    plt.show()
+
+    bought_with_discount = bought[bought["offered_discount"] != 0]
+    successful_sessions_with_discount = sessions[sessions["session_id"].isin(bought_with_discount["session_id"])]
+    successful_views_count_with_discount = successful_sessions_with_discount.groupby("session_id")["user_id"].agg('count') - 1
+    plt.figure()
+    _ = plt.hist(successful_views_count_with_discount.values)
+    plt.show()
+    print(bought_with_discount.shape[0])
+    print(bought.shape[0])
+
 if __name__ == '__main__':
     # clean_products()
-    clean_sessions()
+    foo(pd.read_json("data/sessions_clean.jsonl", lines=True), pd.read_json("data/users.jsonl", lines=True))
 
 
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
