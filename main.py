@@ -40,11 +40,15 @@ def foo(sessions: pd.DataFrame, users: pd.DataFrame):
     bought_with_discount = bought[bought["offered_discount"] != 0]
     successful_sessions_with_discount = sessions[sessions["session_id"].isin(bought_with_discount["session_id"])]
     successful_views_count_with_discount = successful_sessions_with_discount.groupby("session_id")["user_id"].agg('count') - 1
+
     plt.figure()
     _ = plt.hist(successful_views_count_with_discount.values)
     plt.show()
     print(bought_with_discount.shape[0])
     print(bought.shape[0])
+    from collections import Counter
+    print(sorted(Counter(successful_views_count_with_discount.values)))
+
 
 if __name__ == '__main__':
     # clean_products()
