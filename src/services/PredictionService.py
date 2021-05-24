@@ -30,37 +30,35 @@ class PredictionService():
         'differenceBiggerLower',
         'differenceDiscountWithout',
         'differenceThisProductBiggerLower',
-        'uesrDifferenceThisProductBiggerLower'])
+        'userDifferenceThisProductBiggerLower'])
 
-        buyingFrequency = self.userDataRepository.getBuyFrequency(user_id)
-        buyingWith5DiscountFrequency = self.userDataRepository.get5DiscountFrequency(user_id)
-        buyingWith10DiscountFrequency = self.userDataRepository.get10DiscountFrequency(user_id)
-        buyingWith15DiscountFrequency = self.userDataRepository.get15DiscountFrequency(user_id)
-        buyingWith20DiscountFrequency = self.userDataRepository.get20DiscountFrequency(user_id)
-        buyingWithDiscountFrequency = self.userDataRepository.getBuyDiscountFrequency(user_id)
-        buyingWithoutDiscountFrequency = self.userDataRepository.getBuyWithoutFrequency(user_id)
+        user = self.userDataRepository.getUser(user_id)
+        product = self.productDataRepository.getProduct(product_id)
+        userPerProduct = self.userPerProductDataRepository.getUserPerProduct(user_id, product_id)
 
-        buyingProductFrequency = self.productDataRepository.getBuyProductFrequency(product_id)
-        buyingThisProductWith5DiscountFrequency = self.productDataRepository.get5DiscountFrequency(product_id)
-        buyingThisProductWith10DiscountFrequency = self.productDataRepository.get10DiscountFrequency(product_id)
-        buyingThisProductWith15DiscountFrequency = self.productDataRepository.get15DiscountFrequency(product_id)
-        buyingThisProductWith20DiscountFrequency = self.productDataRepository.get20DiscountFrequency(product_id)
-        buyingThisProductWithDiscountFrequency = self.productDataRepository.getBuyDiscountFrequency(product_id)
-        buyingThisProductWithoutDiscountFrequency = self.productDataRepository.getBuyWithoutFrequency(product_id)
+        buyingFrequency = user.buy_frequency
+        buyingWith5DiscountFrequency = user.buy_5_discount_frequency
+        buyingWith10DiscountFrequency = user.buy_10_discount_frequency
+        buyingWith15DiscountFrequency = user.buy_15_discount_frequency
+        buyingWith20DiscountFrequency = user.buy_20_discount_frequency
+        buyingWithDiscountFrequency = user.buy_discount_frequency
+        buyingWithoutDiscountFrequency = user.buy_without_discount_frequency
 
-        userBuyingProductFrequency = self.userPerProductDataRepository.getBuyProductFrequency(product_id)
-        userBuyingThisProductWith5DiscountFrequency = self.userPerProductDataRepository.get5DiscountFrequency(
-            product_id)
-        userBuyingThisProductWith10DiscountFrequency = self.userPerProductDataRepository.get10DiscountFrequency(
-            product_id)
-        userBuyingThisProductWith15DiscountFrequency = self.userPerProductDataRepository.get15DiscountFrequency(
-            product_id)
-        userBuyingThisProductWith20DiscountFrequency = self.userPerProductDataRepository.get20DiscountFrequency(
-            product_id)
-        userBuyingThisProductWithDiscountFrequency = self.userPerProductDataRepository.getBuyDiscountFrequency(
-            product_id)
-        userBuyingThisProductWithoutDiscountFrequency = self.userPerProductDataRepository.getBuyWithoutFrequency(
-            product_id)
+        buyingProductFrequency = product.buy_frequency
+        buyingThisProductWith5DiscountFrequency = product.buy_5_discount_frequency
+        buyingThisProductWith10DiscountFrequency = product.buy_10_discount_frequency
+        buyingThisProductWith15DiscountFrequency = product.buy_15_discount_frequency
+        buyingThisProductWith20DiscountFrequency = product.buy_20_discount_frequency
+        buyingThisProductWithDiscountFrequency = product.buy_discount_frequency
+        buyingThisProductWithoutDiscountFrequency = product.buy_without_discount_frequency
+
+        userBuyingProductFrequency = userPerProduct.buy_frequency
+        userBuyingThisProductWith5DiscountFrequency = userPerProduct.buy_5_discount_frequency
+        userBuyingThisProductWith10DiscountFrequency = userPerProduct.buy_10_discount_frequency
+        userBuyingThisProductWith15DiscountFrequency = userPerProduct.buy_15_discount_frequency
+        userBuyingThisProductWith20DiscountFrequency = userPerProduct.buy_20_discount_frequency
+        userBuyingThisProductWithDiscountFrequency = userPerProduct.buy_discount_frequency
+        userBuyingThisProductWithoutDiscountFrequency = userPerProduct.buy_without_discount_frequency
 
         buyingWithBiggerDiscountFrequency = 0
         buyingWithLowerDiscountFrequency = 0
@@ -175,6 +173,7 @@ class PredictionService():
                 userBuyingThisProductWith10DiscountFrequency + \
                 userBuyingThisProductWith15DiscountFrequency
 
+
         differenceBiggerLower = buyingThisProductWithBiggerDiscountFrequency - \
                                 buyingThisProductWithLowerDiscountFrequency
         differenceDiscountWithout = buyingWithDiscountFrequency - \
@@ -214,6 +213,7 @@ class PredictionService():
         for discount in self.discounts:
             x = self.getSpecimen(user_id, product_id, discount)
             clientWillBuyProductWithThisDiscountProbability = self.modelA.predict(x)
+            print("\n" + str(discount) + ": " + clientWillBuyProductWithThisDiscountProbability)
             if clientWillBuyProductWithThisDiscountProbability > 0.5:
                 prediction = discount
                 break

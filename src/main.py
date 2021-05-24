@@ -18,11 +18,17 @@ productDataBasePath = pathlib.Path('usersAndProducts.db')
 userDataBasePath = productDataBasePath
 userPerProductDataBasePath = productDataBasePath
 
+sessions_cleanPath = pathlib.Path("data/sessions_clean.jsonl")
+sessionsTrainPath = pathlib.Path("data/sessionsTrain.jsonl")
+sessionsTestPath = pathlib.Path("data/sessionsTest.jsonl")
+
+saveModelAPath = pathlib.Path("savedModels/modelA.json")
+
 userDataRepository = UserDataRepository(userDataBasePath.__str__())
 productDataRepository = ProductDataRepository(productDataBasePath.__str__())
 userPerProductDataRepository = UserPerProductDataRepository(userPerProductDataBasePath.__str__())
 
-modelA = ModelA()
+modelA = ModelA(saveModelAPath)
 
 predictionService = PredictionService(modelA, modelA, userDataRepository, productDataRepository, userPerProductDataRepository)
 loggingService = LoggingService(userDataRepository, productDataRepository, userPerProductDataRepository)
@@ -39,7 +45,14 @@ modelTrainer = ModelTrainer(modelA,modelA,predictionService)
 #     user_id = request.args.get('user_id')
 #     product_id = request.args.get('product_id')
 #     prediction = predictionService.getPredictionA(user_id, product_id)
-#     return "<p>" + prediction + "</p>"
+#     return "<p> A prediction: " + prediction + "</p>"
+# 
+# @app.route("/predictB", methods  = ['POST'])
+# def predict():
+#     user_id = request.args.get('user_id')
+#     product_id = request.args.get('product_id')
+#     prediction = predictionService.getPredictionB(user_id, product_id)
+#     return "<p> B prediction: " + prediction + "</p>"
 #
 # @app.route("/bought", methods = ['POST'])
 # def bought():
@@ -62,23 +75,21 @@ modelTrainer = ModelTrainer(modelA,modelA,predictionService)
 
 if __name__ == '__main__':
     print("Hello World!")
-    sessions_cleanPath = pathlib.Path("data/sessions_clean.jsonl")
-    sessionsTrainPath = pathlib.Path("data/sessionsTrain.jsonl")
-    sessionsTestPath = pathlib.Path("data/sessionsTest.jsonl")
-    loggingService.logAndSplitFromJsonl(sessions_cleanPath,
-                                        sessionsTrainPath,
-                                        sessionsTestPath)
-    # modelTrainer.trainA(sessionsTrainPath)
-    #
-    # sessions = pd.read_json(sessionsTestPath, lines=True)
-    #
-    # allBuys = len(sessions[sessions['event_type'] == "BUY_PRODUCT"])
-    # correctPredictionsCounter = 0
-    # for index, row in sessions.iterrows():
-    #     prediction = predictionService.getPredictionA(row.user_id, row.product_id)
-    #
-    #     if row.event_type == "BUY_PRODUCT":
-    #         if prediction == row.offered_discount:
-    #             correctPredictionsCounter = correctPredictionsCounter + 1
-    #
-    # print("Accuracy" + correctPredictionsCounter / allBuys)
+
+    # loggingService.logAndSplitFromJsonl(sessions_cleanPath,
+    #                                     sessionsTrainPath,
+    #                                     sessionsTestPath)
+    modelTrainer.trainA(sessionsTrainPath)
+
+    sessions = pd.read_json(sessionsTestPath, lines=True)
+
+    allBuys = len(sessions[sessions['event_type'] == "BUY_PRODUCT"])
+    correctPredictionsCounter = 0
+    for index, row in sessions.iterrows():
+        prediction = predictionService.getPredictionA(row.user_id, row.product_id)
+
+        if row.event_type == "BUY_PRODUCT":
+            if prediction == row.offered_discount:
+                correctPredictionsCounter = correctPredictionsCounter + 1
+
+    print("Accuracy" + correctPredictionsCounter / allBuys)

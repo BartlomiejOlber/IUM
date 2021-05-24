@@ -30,11 +30,34 @@ class ModelTrainer():
                                        'differenceBiggerLower',
                                        'differenceDiscountWithout',
                                        'differenceThisProductBiggerLower',
-                                       'uesrDifferenceThisProductBiggerLower'])
+                                       'userDifferenceThisProductBiggerLower'])
+
+        sessions = sessions.iloc[0:0.2*(len(sessions)),:]
         for index, row in sessions.iterrows():
+            print("Complete " + str(index/len(sessions.index)))
             specimen = self.predictionService.getSpecimen(row.user_id, row.product_id, row.offered_discount)
-            # maybe needed to create df
-            xTrain = xTrain.append([specimen.discount,
+
+            df = pd.DataFrame(columns=['discount',
+                                       'buyingProductFrequency',
+                                       'buyingFrequency',
+                                       'userBuyingProductFrequency',
+                                       'buyingWithBiggerDiscountFrequency',
+                                       'buyingWithLowerDiscountFrequency',
+                                       'buyingWithDiscountFrequency',
+                                       'buyingWithoutDiscountFrequency',
+                                       'buyingThisProductWithBiggerDiscountFrequency',
+                                       'buyingThisProductWithLowerDiscountFrequency',
+                                       'buyingThisProductWithDiscountFrequency',
+                                       'buyingThisProductWithoutDiscountFrequency',
+                                       'userBuyingThisProductWithBiggerDiscountFrequency',
+                                       'userBuyingThisProductWithLowerDiscountFrequency',
+                                       'userBuyingThisProductWithDiscountFrequency',
+                                       'userBuyingThisProductWithoutDiscountFrequency',
+                                       'differenceBiggerLower',
+                                       'differenceDiscountWithout',
+                                       'differenceThisProductBiggerLower',
+                                       'userDifferenceThisProductBiggerLower'])
+            df.loc[0] = [specimen.discount,
                                    specimen.buyingProductFrequency,
                                    specimen.buyingFrequency,
                                    specimen.userBuyingProductFrequency,
@@ -53,7 +76,9 @@ class ModelTrainer():
                                    specimen.differenceBiggerLower,
                                    specimen.differenceDiscountWithout,
                                    specimen.differenceThisProductBiggerLower,
-                                   specimen.userDifferenceThisProductBiggerLower])
+                                   specimen.userDifferenceThisProductBiggerLower]
+            # print(df)
+            xTrain = xTrain.append(df)
 
         yTrain = sessions.event_type.str.get_dummies().drop(columns='VIEW_PRODUCT')
 

@@ -28,7 +28,24 @@ class UserDataRepository():
 
     def getUser(self, user_id):
         self.cur.execute("SELECT * FROM USERS WHERE USER_ID=?", (user_id,))
-        return User.fromRow(self.cur.fetchone())
+        row = self.cur.fetchone()
+        if row == None:
+            self.cur.execute("INSERT INTO USERS (USER_ID, "
+                             "BUY_FREQUENCY, "
+                             "VIEWS,"
+                             "BUY_WITHOUT_DISCOUNT_FREQUENCY,"
+                             "BUY_5_DISCOUNT_FREQUENCY,"
+                             "BUY_10_DISCOUNT_FREQUENCY,"
+                             "BUY_15_DISCOUNT_FREQUENCY,"
+                             "BUY_20_DISCOUNT_FREQUENCY,"
+                             "BUY_DISCOUNT_FREQUENCY) "
+                             "VALUES (?,?,?,?,?,?,?,?,?)",
+                             (user_id,
+                              0,1,0,0,0,0,0,0))
+            self.conToDataBase.commit()
+            row = [user_id,0,1,0,0,0,0,0,0]
+
+        return User.fromRow(row)
 
     def updateUser(self, user):
         self.cur.execute("UPDATE USERS "

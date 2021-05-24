@@ -32,7 +32,25 @@ class UserPerProductDataRepository():
     def getUserPerProduct(self, user_id, product_id):
         self.cur.execute("SELECT * FROM USER_PER_PRODUCT "
                          "WHERE USER_ID=? AND PRODUCT_ID=?", (user_id, product_id))
-        return UserPerProduct.fromRow(self.cur.fetchone())
+        row = self.cur.fetchone()
+
+        if row == None:
+            self.cur.execute("INSERT INTO USER_PER_PRODUCT (USER_ID,PRODUCT_ID, "
+                             "BUY_FREQUENCY, "
+                             "VIEWS,"
+                             "BUY_WITHOUT_DISCOUNT_FREQUENCY,"
+                             "BUY_5_DISCOUNT_FREQUENCY,"
+                             "BUY_10_DISCOUNT_FREQUENCY,"
+                             "BUY_15_DISCOUNT_FREQUENCY,"
+                             "BUY_20_DISCOUNT_FREQUENCY,"
+                             "BUY_DISCOUNT_FREQUENCY) "
+                             "VALUES (?,?,?,?,?,?,?,?,?,?)",
+                             (user_id, product_id,
+                              0,1,0,0,0,0,0,0))
+            self.conToDataBase.commit()
+            row = [user_id,product_id,0,1,0,0,0,0,0,0]
+
+        return UserPerProduct.fromRow(row)
 
     def updateUserPerProduct(self, userPerProduct):
         self.cur.execute("UPDATE USER_PER_PRODUCT "

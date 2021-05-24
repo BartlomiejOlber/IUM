@@ -28,7 +28,25 @@ class ProductDataRepository():
 
     def getProduct(self, product_id):
         self.cur.execute("SELECT * FROM PRODUCTS WHERE PRODUCT_ID=?", (product_id,))
-        return Product.fromRow(self.cur.fetchone())
+        row = self.cur.fetchone()
+
+        if row == None:
+            self.cur.execute("INSERT INTO PRODUCTS (PRODUCT_ID, "
+                             "BUY_FREQUENCY, "
+                             "VIEWS,"
+                             "BUY_WITHOUT_DISCOUNT_FREQUENCY,"
+                             "BUY_5_DISCOUNT_FREQUENCY,"
+                             "BUY_10_DISCOUNT_FREQUENCY,"
+                             "BUY_15_DISCOUNT_FREQUENCY,"
+                             "BUY_20_DISCOUNT_FREQUENCY,"
+                             "BUY_DISCOUNT_FREQUENCY) "
+                             "VALUES (?,?,?,?,?,?,?,?,?)",
+                             (product_id,
+                              0,1,0,0,0,0,0,0))
+            self.conToDataBase.commit()
+            row = [product_id,0,1,0,0,0,0,0,0]
+
+        return Product.fromRow(row)
 
     def updateProduct(self, product):
         self.cur.execute("UPDATE PRODUCTS "
