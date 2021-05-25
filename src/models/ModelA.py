@@ -19,11 +19,14 @@ class ModelA():
 
     def train(self, xTrain, yTrain):
         xTrain = xTrain.astype('float')
-        yTrain = yTrain.astype('float')
+        # yTrain = yTrain.astype('float')
+        # print(xTrain.iloc[0])
+        # print(yTrain.iloc[0])
         self.xGBClassifier.fit(xTrain, yTrain)
-        print(cross_val_score(self.xGBClassifier, X=xTrain, y=yTrain))
+        # print(cross_val_score(self.xGBClassifier, X=xTrain, y=yTrain))
         # print(self.xGBClassifier.predict())
         self.xGBClassifier.save_model(self.modelSavePath)
+
 
     def predict(self,specimen):
         specimen = specimen.astype('float')

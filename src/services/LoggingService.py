@@ -53,23 +53,28 @@ class LoggingService():
         self.userPerProductDataRepository.updateUserPerProduct(userPerProduct)
         return True
 
-    def logAndSplitFromJsonl(self, sessionsJsonlPath, sessionsTrainPath, sessionsTestPath):
+    def logAndSplitFromJsonl(self, sessionsJsonlPath, sessionsTrainPath, sessionsValidationPath, sessionsTestPath):
         sessions = pd.read_json(sessionsJsonlPath, lines=True, orient='records')
 
         sessions.sort_values(by=['timestamp'], inplace=True, ascending=True)
 
-        sessionsTrain = sessions.iloc[0:int(0.8 * len(sessions)), :]
+        sessionsToDB = sessions.iloc[0:int(0.2 * len(sessions)), :]
+        sessionsTrain = sessions.iloc[int(0.2 * len(sessions)):int(0.5 * len(sessions)), :]
+        sessionsValidation = sessions.iloc[int(0.5 * len(sessions)): int(0.8 * len(sessions)), :]
         sessionsTest = sessions.iloc[int(0.8 * len(sessions)): len(sessions), :]
         sessionsTrain.to_json(sessionsTrainPath, orient='records', lines=True)
+        sessionsValidation.to_json(sessionsValidationPath, orient='records', lines=True)
         sessionsTest.to_json(sessionsTestPath, orient='records', lines=True)
 
-        users = sessionsTrain.groupby("user_id").user_id.unique()
-        products = sessionsTrain.groupby("product_id").product_id.unique()
+        users = sessionsToDB.groupby("user_id").user_id.unique()
+        products = sessionsToDB.groupby("product_id").product_id.unique()
 
         for userA in users:
             user = int(userA[0])
             thisUser = sessionsTrain[sessionsTrain['user_id'] == user]
             views = int(len(thisUser[thisUser['event_type'] == "VIEW_PRODUCT"].index))
+            if views == 0:
+                views = 1
             userDTO = self.userDataRepository.getUser(user)
             userDTO.buy_frequency = float(len(thisUser[thisUser['event_type'] == "BUY_PRODUCT"].index) / views)
             userDTO.buy_without_discount_frequency = \
@@ -92,6 +97,8 @@ class LoggingService():
             product = int(productA[0])
             thisProduct = sessionsTrain[sessionsTrain['product_id'] == product]
             views = int(len(thisProduct[thisProduct['event_type'] == "VIEW_PRODUCT"].index))
+            if views == 0:
+                views = 1
             productDTO = self.productDataRepository.getProduct(product)
             productDTO.buy_frequency = float(len(thisProduct[thisProduct['event_type'] == "BUY_PRODUCT"].index) / views)
             productDTO.buy_without_discount_frequency = \

@@ -22,6 +22,7 @@ userPerProductDataBasePath = productDataBasePath
 
 sessions_cleanPath = pathlib.Path("data/sessions_clean.jsonl")
 sessionsTrainPath = pathlib.Path("data/sessionsTrain.jsonl")
+sessionsValidationPath = pathlib.Path("data/sessionsValidation.jsonl")
 sessionsTestPath = pathlib.Path("data/sessionsTest.jsonl")
 
 saveModelAPath = pathlib.Path("savedModels/modelA.json")
@@ -37,7 +38,7 @@ modelB = ModelB(saveModelBPath)
 predictionService = PredictionService(modelA, modelB, userDataRepository, productDataRepository, userPerProductDataRepository)
 loggingService = LoggingService(userDataRepository, productDataRepository, userPerProductDataRepository)
 
-modelTrainer = ModelTrainer(modelA,modelB,predictionService)
+modelTrainer = ModelTrainer(modelA,modelB,predictionService,loggingService)
 
 
 @app.route("/")
@@ -49,14 +50,14 @@ def predictA():
     user_id = request.args.get('user_id')
     product_id = request.args.get('product_id')
     prediction = predictionService.getPredictionA(user_id, product_id)
-    return "<p> A prediction: " + prediction + "</p>"
+    return "<p> A prediction: " + str(prediction) + "</p>"
 
 @app.route("/predictB", methods  = ['POST'])
 def predictB():
     user_id = request.args.get('user_id')
     product_id = request.args.get('product_id')
     prediction = predictionService.getPredictionB(user_id, product_id)
-    return "<p> B prediction: " + prediction + "</p>"
+    return "<p> B prediction: " + str(prediction) + "</p>"
 
 @app.route("/bought", methods = ['POST'])
 def bought():
@@ -77,8 +78,15 @@ def viewed():
     else:
         return "ERROR"
 def createTrainAndTestAndLoadToDB():
+    userDataRepository.deleteUsersTable()
+    userDataRepository.createUsersTable()
+    productDataRepository.deleteUsersTable()
+    productDataRepository.createUsersTable()
+    userPerProductDataRepository.deleteUserPerProductTable()
+    userPerProductDataRepository.createUserPerProductTable()
     loggingService.logAndSplitFromJsonl(sessions_cleanPath,
                                         sessionsTrainPath,
+                                        sessionsValidationPath,
                                         sessionsTestPath)
 
 def testModelA(debug):
@@ -91,12 +99,17 @@ def testModelA(debug):
         # print(row)
         prediction = predictionService.getPredictionA(row.user_id, row.product_id)
         # print(prediction)
+        isBought = False
         if row.event_type == "BUY_PRODUCT":
+            isBought = True
             if prediction >= row.offered_discount:
                 correctPredictionsCounter = correctPredictionsCounter + 1
+                print(prediction)
         else:
             if prediction > 0:
                 falsePredictionsCounter = falsePredictionsCounter + 1
+
+        loggingService.log(row.user_id, row.product_id, isBought, row.row.offered_discount)
 
     print("Accuracy: " + str(correctPredictionsCounter / allBuys))
     print("Precision: " + str( correctPredictionsCounter / (correctPredictionsCounter + falsePredictionsCounter)))
@@ -116,12 +129,17 @@ def testModelB(debug):
     for index, row in sessions.iterrows():
         prediction = predictionService.getPredictionB(row.user_id, row.product_id)
 
+        isBought = False
         if row.event_type == "BUY_PRODUCT":
+            isBought = True
             if prediction >= row.offered_discount:
                 correctPredictionsCounter = correctPredictionsCounter + 1
+                print(prediction)
         else:
             if prediction > 0:
                 falsePredictionsCounter = falsePredictionsCounter + 1
+
+        loggingService.log(row.user_id, row.product_id, isBought, row.row.offered_discount)
 
     print("Accuracy: " + str(correctPredictionsCounter / allBuys))
     print("Precision: " + str( correctPredictionsCounter / (correctPredictionsCounter + falsePredictionsCounter)))
@@ -136,8 +154,8 @@ if __name__ == '__main__':
 
     parser.add_option("-q", "--debug", action="store_true", dest="debug", default=False,
                       help="Prints debug info")
-    parser.add_option("-l", "--load", action="store_true", dest="load", default=False,
-                      help="Loads data from data/sessions_clean.jsonl")
+    # parser.add_option("-l", "--load", action="store_true", dest="load", default=False,
+    #                   help="Loads data from data/sessions_clean.jsonl")
     parser.add_option("-t", "--train", type="int", dest="train", default=0,
                       help="Train model A (1) or model B (2) or none (0) (default 0)")
     parser.add_option("-e", "--test", type="int", dest="test", default=0,
@@ -145,13 +163,15 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
 
-    if options.load:
-        createTrainAndTestAndLoadToDB()
+    # if options.load:
+    #     createTrainAndTestAndLoadToDB()
 
     if options.train == 1:
+        createTrainAndTestAndLoadToDB()
         trainModelA(options.debug)
     else:
         if options.train == 2:
+            createTrainAndTestAndLoadToDB()
             trainModelB(options.debug)
 
     if options.test == 1:

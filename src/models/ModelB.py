@@ -14,7 +14,7 @@ class ModelB():
     def createModel(self):
 
         model = keras.Sequential()
-        model.add(keras.Input(shape=(20)))
+        model.add(keras.layers.InputLayer(input_shape=(20,)))
 
         model.add(keras.layers.BatchNormalization())
         model.add(keras.layers.Dropout(0.2))
@@ -39,55 +39,17 @@ class ModelB():
         model.compile(optimizer=keras.optimizers.Nadam(clipnorm=1, learning_rate=3e-2),
                       loss=keras.losses.BinaryCrossentropy())
 
+        return model
 
 
 
-    def train(self,
-              xTrain, yTrain):
+    def train(self,xTrain, yTrain):
         # early_stopping_cb = keras.callbacks.EarlyStopping(patience=10,
         #                                                   restore_best_weights=True)
+        xTrain = xTrain.astype('float')
+        # yTrain = yTrain.astype('float')
         self.model.fit(xTrain, yTrain, epochs=100)
         self.model.save(self.modelSavePath)
 
-    def predict(self,
-                discount,
-                buyingProductFrequency,
-                buyingFrequency,
-                userBuyingProductFrequency,
-                buyingWithBiggerDiscountFrequency,
-                buyingWithLowerDiscountFrequency,
-                buyingWithDiscountFrequency,
-                buyingWithoutDiscountFrequency,
-                buyingThisProductWithBiggerDiscountFrequency,
-                buyingThisProductWithLowerDiscountFrequency,
-                buyingThisProductWithDiscountFrequency,
-                buyingThisProductWithoutDiscountFrequency,
-                userBuyingThisProductWithBiggerDiscountFrequency,
-                userBuyingThisProductWithLowerDiscountFrequency,
-                userBuyingThisProductWithDiscountFrequency,
-                userBuyingThisProductWithoutDiscountFrequency,
-                differenceBiggerLower,
-                differenceDiscountWithout,
-                differenceThisProductBiggerLower,
-                userDifferenceThisProductBiggerLower):
-        x = [discount,
-             buyingProductFrequency,
-             buyingFrequency,
-             userBuyingProductFrequency,
-             buyingWithBiggerDiscountFrequency,
-             buyingWithLowerDiscountFrequency,
-             buyingWithDiscountFrequency,
-             buyingWithoutDiscountFrequency,
-             buyingThisProductWithBiggerDiscountFrequency,
-             buyingThisProductWithLowerDiscountFrequency,
-             buyingThisProductWithDiscountFrequency,
-             buyingThisProductWithoutDiscountFrequency,
-             userBuyingThisProductWithBiggerDiscountFrequency,
-             userBuyingThisProductWithLowerDiscountFrequency,
-             userBuyingThisProductWithDiscountFrequency,
-             userBuyingThisProductWithoutDiscountFrequency,
-             differenceBiggerLower,
-             differenceDiscountWithout,
-             differenceThisProductBiggerLower,
-             userDifferenceThisProductBiggerLower]
-        return self.model.predict(x)
+    def predict(self,specimen):
+        return self.model.predict(specimen)
