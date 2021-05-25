@@ -208,12 +208,25 @@ class PredictionService():
         return specimen
 
     def getPredictionA(self, user_id, product_id):
-        prediction = self.discounts[len(self.discounts) - 1]
+        prediction = self.discounts[0]
 
         for discount in self.discounts:
             x = self.getSpecimen(user_id, product_id, discount)
             clientWillBuyProductWithThisDiscountProbability = self.modelA.predict(x)
-            print("\n" + str(discount) + ": " + clientWillBuyProductWithThisDiscountProbability)
+            # print("\n" + str(discount) + ": " + str(clientWillBuyProductWithThisDiscountProbability))
+            if clientWillBuyProductWithThisDiscountProbability > 0.5:
+                prediction = discount
+                break
+
+        return prediction
+
+    def getPredictionB(self, user_id, product_id):
+        prediction = self.discounts[0]
+
+        for discount in self.discounts:
+            x = self.getSpecimen(user_id, product_id, discount)
+            clientWillBuyProductWithThisDiscountProbability = self.modelB.predict(x)
+            # print("\n" + str(discount) + ": " + str(clientWillBuyProductWithThisDiscountProbability))
             if clientWillBuyProductWithThisDiscountProbability > 0.5:
                 prediction = discount
                 break
