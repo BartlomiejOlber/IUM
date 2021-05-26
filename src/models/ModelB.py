@@ -37,18 +37,24 @@ class ModelB():
 
         model.add(keras.layers.Dense(1, activation=keras.activations.softmax))
         model.compile(optimizer=keras.optimizers.Nadam(clipnorm=1, learning_rate=3e-2),
-                      loss=keras.losses.BinaryCrossentropy())
+                      loss=keras.losses.BinaryCrossentropy(), metrics=['accuracy', 'precision'])
 
         return model
 
 
 
-    def train(self,xTrain, yTrain):
-        # early_stopping_cb = keras.callbacks.EarlyStopping(patience=10,
-        #                                                   restore_best_weights=True)
+    def train(self, xTrain, yTrain, xTrainValidation, yTrainValidation ):
+        early_stopping_cb = keras.callbacks.EarlyStopping(patience=10,
+                                                          restore_best_weights=True)
         xTrain = xTrain.astype('float')
         # yTrain = yTrain.astype('float')
-        self.model.fit(xTrain, yTrain, epochs=100)
+
+        xTrainValidation = xTrainValidation.astype('float')
+        # yTrainValidation = yTrainValidation.astype('float')
+
+
+        self.model.fit(xTrain, yTrain, validation_data=(xTrainValidation, yTrainValidation), epochs=100,
+                       callbacks=[early_stopping_cb])
         self.model.save(self.modelSavePath)
 
     def predict(self,specimen):

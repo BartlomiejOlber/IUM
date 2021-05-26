@@ -38,7 +38,7 @@ modelB = ModelB(saveModelBPath)
 predictionService = PredictionService(modelA, modelB, userDataRepository, productDataRepository, userPerProductDataRepository)
 loggingService = LoggingService(userDataRepository, productDataRepository, userPerProductDataRepository)
 
-modelTrainer = ModelTrainer(modelA,modelB,predictionService,loggingService)
+modelTrainer = ModelTrainer(predictionService,loggingService)
 
 
 @app.route("/")
@@ -109,16 +109,16 @@ def testModelA(debug):
             if prediction > 0:
                 falsePredictionsCounter = falsePredictionsCounter + 1
 
-        loggingService.log(row.user_id, row.product_id, isBought, row.row.offered_discount)
+        loggingService.log(row.user_id, row.product_id, isBought, row.offered_discount)
 
     print("Accuracy: " + str(correctPredictionsCounter / allBuys))
     print("Precision: " + str( correctPredictionsCounter / (correctPredictionsCounter + falsePredictionsCounter)))
 
 def trainModelA(debug):
-    modelTrainer.trainA(sessionsTrainPath)
+    modelTrainer.train(modelA, sessionsTrainPath, sessionsValidationPath)
 
 def trainModelB(debug):
-    modelTrainer.trainB(sessionsTrainPath)
+    modelTrainer.train(modelB, sessionsTrainPath, sessionsValidationPath)
 
 def testModelB(debug):
     sessions = pd.read_json(sessionsTestPath, lines=True)
@@ -134,12 +134,12 @@ def testModelB(debug):
             isBought = True
             if prediction >= row.offered_discount:
                 correctPredictionsCounter = correctPredictionsCounter + 1
-                print(prediction)
+                # print(prediction)
         else:
             if prediction > 0:
                 falsePredictionsCounter = falsePredictionsCounter + 1
 
-        loggingService.log(row.user_id, row.product_id, isBought, row.row.offered_discount)
+        loggingService.log(row.user_id, row.product_id, isBought, row.offered_discount)
 
     print("Accuracy: " + str(correctPredictionsCounter / allBuys))
     print("Precision: " + str( correctPredictionsCounter / (correctPredictionsCounter + falsePredictionsCounter)))
