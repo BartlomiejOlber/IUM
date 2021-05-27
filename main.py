@@ -99,12 +99,12 @@ def testModelA(debug):
         # print(row)
         prediction = predictionService.getPredictionA(row.user_id, row.product_id)
         # print(prediction)
+        # print(prediction)
         isBought = False
         if row.event_type == "BUY_PRODUCT":
             isBought = True
             if prediction >= row.offered_discount:
                 correctPredictionsCounter = correctPredictionsCounter + 1
-                print(prediction)
         else:
             if prediction > 0:
                 falsePredictionsCounter = falsePredictionsCounter + 1
@@ -128,6 +128,7 @@ def testModelB(debug):
     falsePredictionsCounter = 0
     for index, row in sessions.iterrows():
         prediction = predictionService.getPredictionB(row.user_id, row.product_id)
+        # print(prediction)
 
         isBought = False
         if row.event_type == "BUY_PRODUCT":

@@ -214,7 +214,7 @@ class PredictionService():
             x = self.getSpecimen(user_id, product_id, discount)
             clientWillBuyProductWithThisDiscountProbability = self.modelA.predict(x)
             # print("\n" + str(discount) + ": " + str(clientWillBuyProductWithThisDiscountProbability))
-            if clientWillBuyProductWithThisDiscountProbability > 0.5:
+            if clientWillBuyProductWithThisDiscountProbability > 0.75:
                 prediction = discount
                 break
 
@@ -227,7 +227,7 @@ class PredictionService():
             x = self.getSpecimen(user_id, product_id, discount)
             clientWillBuyProductWithThisDiscountProbability = self.modelB.predict(x)
             # print("\n" + str(discount) + ": " + str(clientWillBuyProductWithThisDiscountProbability))
-            if clientWillBuyProductWithThisDiscountProbability > 0.5:
+            if clientWillBuyProductWithThisDiscountProbability > 0.75:
                 prediction = discount
                 break
 

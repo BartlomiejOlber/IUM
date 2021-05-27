@@ -19,25 +19,25 @@ class ModelB():
         model.add(keras.layers.BatchNormalization())
         model.add(keras.layers.Dropout(0.2))
         model.add(
-            keras.layers.Dense(100, activation=keras.layers.LeakyReLU(alpha=0.2),
+            keras.layers.Dense(50, activation=keras.layers.ReLU(),
                          kernel_initializer=keras.initializers.he_uniform))
 
         model.add(keras.layers.BatchNormalization())
         model.add(keras.layers.Dropout(0.2))
         model.add(
-            keras.layers.Dense(50, activation=keras.layers.LeakyReLU(alpha=0.2),
+            keras.layers.Dense(30, activation=keras.layers.ReLU(),
                          kernel_initializer=keras.initializers.he_uniform))
-
+        #
         model.add(keras.layers.BatchNormalization())
         model.add(keras.layers.Dropout(0.2))
         model.add(
-            keras.layers.Dense(10, activation=keras.layers.LeakyReLU(alpha=0.2),
+            keras.layers.Dense(20, activation=keras.layers.ReLU(),
                          kernel_initializer=keras.initializers.he_uniform))
 
 
         model.add(keras.layers.Dense(1, activation=keras.activations.softmax))
         model.compile(optimizer=keras.optimizers.Nadam(clipnorm=1, learning_rate=3e-2),
-                      loss=keras.losses.BinaryCrossentropy(), metrics=['accuracy', 'precision'])
+                      loss=keras.losses.BinaryCrossentropy(), metrics=['accuracy'])
 
         return model
 
@@ -47,10 +47,12 @@ class ModelB():
         early_stopping_cb = keras.callbacks.EarlyStopping(patience=10,
                                                           restore_best_weights=True)
         xTrain = xTrain.astype('float')
-        # yTrain = yTrain.astype('float')
+        yTrain = pd.DataFrame(yTrain,columns=['Bought'])
+        yTrain = yTrain.astype('float')
 
         xTrainValidation = xTrainValidation.astype('float')
-        # yTrainValidation = yTrainValidation.astype('float')
+        yTrainValidation = pd.DataFrame(yTrainValidation,columns=['Bought'])
+        yTrainValidation = yTrainValidation.astype('float')
 
 
         self.model.fit(xTrain, yTrain, validation_data=(xTrainValidation, yTrainValidation), epochs=100,

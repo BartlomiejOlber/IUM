@@ -8,8 +8,9 @@ class ModelA():
 
     def __init__(self, modelSavePath):
         params = {
-            "learning_rate": 0.01,
-            "max_depth": 15
+            "learning_rate": 0.001,
+            "max_depth": 2,
+            "objective": "binary:logistic"
         }
         self.xGBClassifier = XGBClassifier(**params)
         self.modelSavePath = modelSavePath
@@ -19,16 +20,19 @@ class ModelA():
 
     def train(self, xTrain, yTrain, xTrainValidation, yTrainValidation):
         xTrain = xTrain.astype('float')
-        # yTrain = yTrain.astype('float')
+        yTrain = pd.DataFrame(yTrain,columns=['Bought'])
+        yTrain = yTrain.astype('float')
 
         xTrainValidation = xTrainValidation.astype('float')
-        # yTrainValidation = yTrainValidation.astype('float')
+        yTrainValidation = pd.DataFrame(yTrainValidation,columns=['Bought'])
+        yTrainValidation = yTrainValidation.astype('float')
+
         eval_set = [(xTrainValidation, yTrainValidation)]
         # print(xTrain.iloc[0])
         # print(yTrain.iloc[0])
 
         # yTrain = xgboost.DMatrix(np.array(yTrain))
-        self.xGBClassifier.fit(xTrain, np.array(yTrain), early_stopping_rounds=10, eval_metric=["auc","error","logloss"], eval_set=eval_set)
+        self.xGBClassifier.fit(xTrain, yTrain, early_stopping_rounds=10, eval_metric=["auc","error","logloss"], eval_set=eval_set)
         # print(cross_val_score(self.xGBClassifier, X=xTrain, y=yTrain))
         # print(self.xGBClassifier.predict())
         self.xGBClassifier.save_model(self.modelSavePath)

@@ -45,16 +45,67 @@ class ModelTrainer():
             yTrain.clear()
             yTrainValidation.clear()
 
+            numberOfBought=0
+            numberOf0Bought=0
+            numberOf5Bought=0
+            numberOf10Bought=0
+            numberOf15Bought=0
+            numberOf20Bought=0
+            numberOfViewed=0
+
             for index, row in chunk.iterrows():
                 print("Complete " + str(index/len(chunk.index)))
                 specimen = self.predictionService.getSpecimen(row.user_id, row.product_id, row.offered_discount)
-                xTrain = xTrain.append(specimen, ignore_index=True)
-
                 if row.event_type == "BUY_PRODUCT":
-                    yTrain.append(1)
-                else:
-                    yTrain.append(0)
+                    append = False
+                    if row.offered_discount == 0:
+                        if numberOf5Bought >= numberOf0Bought and \
+                            numberOf10Bought >= numberOf0Bought and \
+                            numberOf15Bought >= numberOf0Bought and \
+                            numberOf20Bought >= numberOf0Bought:
+                            numberOf0Bought = numberOf0Bought +1
+                            append = True
+                    if row.offered_discount == 5:
+                        if numberOf0Bought >= numberOf5Bought and \
+                            numberOf10Bought >= numberOf5Bought and \
+                            numberOf15Bought >= numberOf5Bought and \
+                            numberOf20Bought >= numberOf5Bought:
+                            numberOf5Bought = numberOf5Bought +1
+                            append = True
 
+                    if row.offered_discount == 10:
+                        if numberOf5Bought >= numberOf10Bought and \
+                            numberOf0Bought >= numberOf10Bought and \
+                            numberOf15Bought >= numberOf10Bought and \
+                            numberOf20Bought >= numberOf10Bought:
+                            numberOf10Bought = numberOf10Bought +1
+                            append = True
+
+                    if row.offered_discount == 15:
+                        if numberOf5Bought >= numberOf15Bought and \
+                            numberOf10Bought >= numberOf15Bought and \
+                            numberOf0Bought >= numberOf15Bought and \
+                            numberOf20Bought >= numberOf15Bought:
+                            numberOf15Bought = numberOf15Bought +1
+                            append = True
+
+                    if row.offered_discount == 20:
+                        if numberOf5Bought >= numberOf20Bought and \
+                            numberOf0Bought >= numberOf20Bought and \
+                            numberOf15Bought >= numberOf20Bought and \
+                            numberOf0Bought >= numberOf20Bought:
+                            numberOf20Bought = numberOf20Bought +1
+                            append = True
+
+                    if append:
+                        yTrain.append(1)
+                        xTrain = xTrain.append(specimen, ignore_index=True)
+                        numberOfBought = numberOfBought +1
+                else:
+                    if numberOfViewed <= numberOfBought:
+                        yTrain.append(0)
+                        xTrain = xTrain.append(specimen, ignore_index=True)
+                        numberOfViewed = numberOfViewed +1
 
             xTrainValidation = pd.DataFrame(columns=['discount',
                                            'buyingProductFrequency',
@@ -77,16 +128,67 @@ class ModelTrainer():
                                            'differenceThisProductBiggerLower',
                                            'userDifferenceThisProductBiggerLower'])
 
+            numberOfBought=0
+            numberOf0Bought=0
+            numberOf5Bought=0
+            numberOf10Bought=0
+            numberOf15Bought=0
+            numberOf20Bought=0
+            numberOfViewed=0
+
             for j, row in sessionsValidationChunked[i].iterrows():
                 print("Validation Complete " + str(j/len(sessionsValidationChunked[i].index)))
                 specimen = self.predictionService.getSpecimen(row.user_id, row.product_id, row.offered_discount)
-
-                xTrainValidation = xTrainValidation.append(specimen, ignore_index=True)
-
                 if row.event_type == "BUY_PRODUCT":
-                    yTrainValidation.append(1)
+                    append = False
+                    if row.offered_discount == 0:
+                        if numberOf5Bought >= numberOf0Bought and \
+                                numberOf10Bought >= numberOf0Bought and \
+                                numberOf15Bought >= numberOf0Bought and \
+                                numberOf20Bought >= numberOf0Bought:
+                            numberOf0Bought = numberOf0Bought + 1
+                            append = True
+                    if row.offered_discount == 5:
+                        if numberOf0Bought >= numberOf5Bought and \
+                                numberOf10Bought >= numberOf5Bought and \
+                                numberOf15Bought >= numberOf5Bought and \
+                                numberOf20Bought >= numberOf5Bought:
+                            numberOf5Bought = numberOf5Bought + 1
+                            append = True
+
+                    if row.offered_discount == 10:
+                        if numberOf5Bought >= numberOf10Bought and \
+                                numberOf0Bought >= numberOf10Bought and \
+                                numberOf15Bought >= numberOf10Bought and \
+                                numberOf20Bought >= numberOf10Bought:
+                            numberOf10Bought = numberOf10Bought + 1
+                            append = True
+
+                    if row.offered_discount == 15:
+                        if numberOf5Bought >= numberOf15Bought and \
+                                numberOf10Bought >= numberOf15Bought and \
+                                numberOf0Bought >= numberOf15Bought and \
+                                numberOf20Bought >= numberOf15Bought:
+                            numberOf15Bought = numberOf15Bought + 1
+                            append = True
+
+                    if row.offered_discount == 20:
+                        if numberOf5Bought >= numberOf20Bought and \
+                                numberOf0Bought >= numberOf20Bought and \
+                                numberOf15Bought >= numberOf20Bought and \
+                                numberOf0Bought >= numberOf20Bought:
+                            numberOf20Bought = numberOf20Bought + 1
+                            append = True
+
+                    if append:
+                        yTrainValidation.append(1)
+                        xTrainValidation = xTrainValidation.append(specimen, ignore_index=True)
+                        numberOfBought = numberOfBought + 1
                 else:
-                    yTrainValidation.append(0)
+                    if numberOfViewed <= numberOfBought:
+                        yTrainValidation.append(0)
+                        xTrainValidation = xTrainValidation.append(specimen, ignore_index=True)
+                        numberOfViewed = numberOfViewed +1
 
             xTrain = xTrain.fillna(0)
             xTrainValidation = xTrainValidation.fillna(0)
