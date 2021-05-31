@@ -9,7 +9,7 @@ class ModelA():
     def __init__(self, modelSavePath):
         params = {
             "learning_rate": 0.001,
-            "max_depth": 2,
+            "max_depth": 7,
             "objective": "binary:logistic"
         }
         self.xGBClassifier = XGBClassifier(**params)
